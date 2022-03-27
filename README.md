@@ -1,4 +1,4 @@
-# Asteroids 
+# Arkenoid
 
 Built from scratch using SMFL and C++
 

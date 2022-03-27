@@ -4,6 +4,21 @@
 #define ANTI_ALIASING_LEVEL 10
 #define ICON_IMAGE_PATH "res/images/icon.png"
 
+constexpr int xBricks{11}, yBricks{4};
+const sf::Vector2f brickSize = {60.0f, 20.0f};
+
+void check_collision(ar::Paddle &mPaddle, ar::Ball &mBall)
+{
+    // do nothing if no collision
+    if (!ar::isIntersecting(mPaddle, mBall)) return;
+
+    // reverse velocity in the y dimension
+    mBall.velocity.y = -mBall.velocity.y;
+    
+    if (mBall.x() > mPaddle.x()) mBall.velocity.x = mBall.ballVelocity;
+    else mBall.velocity.x = -mBall.ballVelocity;
+}
+
 int main()
 {
     // globally enable antialiasing, make the edges of shapes smoother
@@ -38,6 +53,25 @@ int main()
         sf::Vector2f(screenWidth / 2, screenHeight / 2), 
         sf::Vector2f(screenWidth, screenHeight)
         };
+    
+    // create paddle entity 
+    ar::Paddle paddle{
+        sf::Vector2f(screenWidth / 2, screenHeight - 100 ), 
+        sf::Vector2f(screenWidth, screenHeight)
+    };
+
+    // create bunch of bricks entities
+    // in grid fashion
+    std::vector <ar::Brick> bricks;
+    for (int x{0}; x <= xBricks; ++x)
+        for (int y{0}; y < yBricks; ++y)
+        {
+            bricks.emplace_back(
+                sf::Vector2f((x + 1) * (brickSize.x + 42) + 22, (y + 2) * (brickSize.y + 6)),
+                brickSize
+            );
+
+        }
 
     while (window.isOpen())
     {
@@ -47,10 +81,17 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-
         window.clear(sf::Color::Black);
+
         ball.update();
+        paddle.update();
+
+        check_collision(paddle, ball);
+        
         window.draw(ball.shape);
+        window.draw(paddle.shape);
+        for(auto& brick: bricks) window.draw(brick.shape);
+        
         window.display();
     }
 
